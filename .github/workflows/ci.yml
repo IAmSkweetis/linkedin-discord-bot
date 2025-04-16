@@ -31,7 +31,7 @@ jobs:
       - name: Install our dev tools
         run: uv sync --all-extras --dev
       - name: Run pylint
-        run: uv run pylint carlbot/ tests/
+        run: uv run pylint linkedin_discord_bot/ tests/
 
   pytest:
     name: pytest
@@ -57,7 +57,7 @@ jobs:
       - name: Install project
         run: uv sync --only-dev
       - name: Run mypy
-        run: uv run mypy carlbot/
+        run: uv run mypy linkedin_discord_bot/
 
   deptry:
     name: deptry
