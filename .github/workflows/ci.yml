@@ -1,0 +1,73 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.vscode/**'
+      - '**/*.md'
+      - '.github/**'
+      - 'Taskfile.yml'
+      - 'tasks/**'
+      - 'Dockerfile'
+      - 'docker-compose.yaml'
+
+  pull_request:
+  workflow_dispatch:
+
+env:
+  UV_CACHE_DIR: /tmp/.uv-cache
+
+jobs:
+  pylint:
+    name: pylint
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install our dev tools
+        run: uv sync --all-extras --dev
+      - name: Run pylint
+        run: uv run pylint carlbot/ tests/
+
+  pytest:
+    name: pytest
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install our dev tools
+        run: uv sync --all-extras --dev
+      - name: Run pytest
+        run: uv run pytest tests/
+
+  mypy:
+    name: mypy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install project
+        run: uv sync --only-dev
+      - name: Run mypy
+        run: uv run mypy carlbot/
+
+  deptry:
+    name: deptry
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+      - name: Install project
+        run: uv sync --only-dev
+      - name: Run deptry
+        run: uv run deptry .

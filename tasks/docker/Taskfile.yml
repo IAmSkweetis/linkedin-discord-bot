@@ -1,0 +1,93 @@
+version: "3"
+
+vars:
+  DKR_REGISTRY: ghcr.io
+  DKR_IMAGE_NAME: "{{.DKR_REGISTRY}}/{{.GIT_REPO_NAME}}"
+
+tasks:
+  default:
+    desc: Lists docker tasks
+    dir: "{{.TASKFILE_DIR}}"
+    cmds:
+      - task --list
+
+  build:
+    desc: Builds the docker image
+    internal: true
+    vars:
+      DKR_BUILD_DATE:
+        sh: date -u +'%Y-%m-%dT%H:%M:%SZ'
+    requires:
+      vars:
+        - DKR_BUILD_VERSION
+    cmds:
+      - |
+        docker build \
+          --build-arg PYTHON_VERSION={{.PYTHON_VERSION}} \
+          --build-arg PKG_NAME={{.PKG_NAME}} \
+          --build-arg PKG_VERSION={{.PKG_VERSION}} \
+          --build-arg GIT_REPO_URL={{.GIT_REPO_URL}} \
+          --build-arg GIT_COMMIT_SHA={{.GIT_COMMIT_SHA}} \
+          --build-arg DKR_BUILD_DATE={{.DKR_BUILD_DATE}} \
+          -t {{.DKR_IMAGE_NAME}}:{{.DKR_BUILD_VERSION}} \
+          .
+
+  build-ci:
+    desc: Build the Docker Image with ci tag
+    aliases: ["bc"]
+    cmds:
+      - task: :docker:build
+        vars:
+          DKR_BUILD_VERSION: ci
+
+  build-local:
+    desc: Build the Docker Image with dev-local tag
+    aliases: ["bl"]
+    cmds:
+      - task: :docker:build
+        vars:
+          DKR_BUILD_VERSION: dev-local
+
+  build-release:
+    desc: Build the Docker Image with release tag
+    aliases: ["br"]
+    cmds:
+      - task: :docker:build
+        vars:
+          DKR_BUILD_VERSION: "{{.PKG_VERSION}}"
+      - docker tag {{.DKR_IMAGE_NAME}}:{{.PKG_VERSION}} {{.DKR_IMAGE_NAME}}:latest
+
+  login:
+    desc: Log in to the Docker registry
+    internal: true
+    vars:
+      DOCKER_USERNAME:
+        sh: git config --get user.email
+    cmds:
+      - echo "$GHCR_TOKEN" | docker login ghcr.io -u "{{.DOCKER_USERNAME}}" --password-stdin
+
+  push:
+    desc: Push the Docker Image to the registry
+    aliases: ["p"]
+    deps:
+      - :docker:login
+    cmds:
+      - docker push {{.DKR_IMAGE_NAME}}:{{.PKG_VERSION}}
+      - docker push {{.DKR_IMAGE_NAME}}:latest
+
+  run:
+    desc: Run the Docker Image
+    aliases: ["r"]
+    requires:
+      vars:
+        - DKR_BUILD_VERSION
+    cmds:
+      - docker run --rm -it {{.DKR_IMAGE_NAME}}:{{.DKR_BUILD_VERSION}}
+
+  run-local:
+    desc: Run the Docker Image locally
+    aliases: ["rl"]
+    cmds:
+      - task: :docker:run
+        vars:
+          DKR_BUILD_VERSION: dev-local

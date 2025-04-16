@@ -1,0 +1,7 @@
+name: linkedin-discord-bot
+services:
+  li-discord:
+    container_name: li-discord
+    image: ghcr.io/iamskweetis/linkedin-discord-bot:dev-local
+    env_file:
+      - .env

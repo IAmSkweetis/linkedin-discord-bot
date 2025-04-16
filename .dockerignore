@@ -1,0 +1,14 @@
+.mypy_cache
+.sqlite
+.venv
+__pycache__
+tests
+.gitignore
+.env
+.git
+*.code-workspace
+*.vscode
+.local
+dist
+pytest.xml
+pytest.log

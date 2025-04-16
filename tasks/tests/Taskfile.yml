@@ -1,0 +1,48 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Lists tests tasks
+    dir: "{{.TASKFILE_DIR}}"
+    cmds:
+      - task --list
+
+  mypy:
+    desc: Run mypy
+    cmds:
+      - task: :uv-run
+        vars:
+          UV_CMD: "mypy {{.MODULE_NAME}}/"
+          CLI_ARGS: "{{.CLI_ARGS}}"
+
+  pylint:
+    desc: Run pylint
+    cmds:
+      - task: :uv-run
+        vars:
+          UV_CMD: "pylint {{.MODULE_NAME}}/ tests/"
+          CLI_ARGS: "{{.CLI_ARGS}}"
+
+  pytest:
+    desc: Run pytest
+    cmds:
+      - task: :uv-run
+        vars:
+          UV_CMD: "pytest"
+          CLI_ARGS: "{{.CLI_ARGS}}"
+
+  deptry:
+    desc: Run deptry
+    cmds:
+      - task: :uv-run
+        vars:
+          UV_CMD: "deptry ."
+          CLI_ARGS: "{{.CLI_ARGS}}"
+
+  all:
+    desc: Run all tests (mypy, pylint, pytest, deptry)
+    cmds:
+      - task: mypy
+      - task: pylint
+      - task: pytest
+      - task: deptry

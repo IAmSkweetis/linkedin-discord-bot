@@ -1,0 +1,40 @@
+version: "3"
+
+dotenv:
+  - .env
+
+vars:
+  PYTHON_VERSION: "3.12.10"
+  PKG_NAME: linkedin-discord-bot
+  MODULE_NAME: linkedin_discord_bot
+  GIT_REPO_NAME: iamskweetis/linkedin-discord-bot
+  GIT_REPO_URL: https://github.com/{{.GIT_REPO_NAME}}
+  GIT_COMMIT_SHA:
+    sh: git rev-parse HEAD
+  PKG_VERSION:
+    sh: echo v$(cat VERSION)
+
+
+includes:
+  docker:
+    taskfile: ./tasks/docker/Taskfile.yml
+    aliases: ["d"]
+  tests:
+    taskfile: ./tasks/tests/Taskfile.yml
+    aliases: ["t"]
+
+tasks:
+  default:
+    desc: Lists all available tasks
+    dir: "{{.TASKFILE_DIR}}"
+    cmds:
+      - task --list
+
+  uv-run:
+    desc: Run a command using uv run
+    internal: true
+    requires:
+      vars:
+        - UV_CMD
+    cmds:
+      - uv run {{.UV_CMD}} {{.CLI_ARGS}}
