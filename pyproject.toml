@@ -1,0 +1,54 @@
+[project]
+name = "linkedin-discord-bot"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "proxycurl-py[asyncio]>=0.1.0.post2",
+    "typer>=0.15.2",
+]
+
+[project.scripts]
+li-cli = "linkedin_discord_bot.cli:cli"
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "deptry>=0.23.0",
+    "flake8>=7.2.0",
+    "isort>=6.0.1",
+    "mypy>=1.15.0",
+    "pylint>=3.3.6",
+    "pytest>=8.3.5",
+]
+
+[tool.black]
+line-length = 100
+
+[tool.mypy]
+mypy_path = "stubs"
+python_version = "3.12.10"
+exclude = "tests/.*"
+strict = true
+
+[tool.pylint.format]
+expected-line-ending-format = "LF"
+max-line-length = 100
+
+[tool.pylint."messages control"]
+disable = [ "all",]
+enable = [ "mixed-line-endings", "unexpected-line-ending-format",]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+mock_use_standalone_module = true
+addopts = "-v --junitxml=pytest.xml --cov=eg_game_ops_api --cov-report=term-missing --cov-report=xml --cov-report=html --cov-fail-under=50 --cov-config=.coveragerc"
+testpaths = [ "tests",]
+log_file = "pytest.log"
+log_file_level = "INFO"
+log_file_format = "%(asctime)s %(levelname)s %(message)s"
