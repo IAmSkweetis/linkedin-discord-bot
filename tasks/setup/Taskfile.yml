@@ -1,0 +1,26 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Lists setup tasks
+    dir: "{{.TASKFILE_DIR}}"
+    cmds:
+      - task --list
+
+  chromedriver:
+    desc: Install chromedriver
+    aliases: ["cd"]
+    vars:
+      CHROME_VERSION: "125.0.6422.141-1"
+      CHROME_DRIVER_VERSION: "125.0.6422.141"
+      CHROME_DL_URL: "http://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_{{.CHROME_VERSION}}_amd64.deb"
+      CHROME_DRIVER_DL_URL: "https://storage.googleapis.com/chrome-for-testing-public/{{.CHROME_DRIVER_VERSION}}/linux64/chromedriver-linux64.zip"
+    cmds:
+      - mkdir -p /tmp/chromedriver
+      - defer: rm -rf /tmp/chromedriver
+      - curl -L {{.CHROME_DL_URL}} -o /tmp/chromedriver/google-chrome-stable.deb
+      - sudo apt-get install -y /tmp/chromedriver/google-chrome-stable.deb
+      - curl -L {{.CHROME_DRIVER_DL_URL}} -o /tmp/chromedriver/chromedriver-linux64.zip
+      - unzip /tmp/chromedriver/chromedriver-linux64.zip -d /tmp/chromedriver
+      - sudo mv /tmp/chromedriver/chromedriver-linux64/chromedriver /usr/bin/chromedriver
+      - sudo chmod +x /usr/bin/chromedriver

@@ -175,3 +175,6 @@ cython_debug/
 
 # pytest things
 pytest.xml
+
+chromedriver
+.sqlite

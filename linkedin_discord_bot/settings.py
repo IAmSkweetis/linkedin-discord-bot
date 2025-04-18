@@ -1,3 +1,5 @@
+from typing import Any, Dict
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -8,16 +10,21 @@ class Settings(BaseSettings):
     app_name: str = Field(default="linkedin-discord-bot")
 
     # Logging Config
-    logging_level: str = Field(default="INFO")
+    log_level: str = Field(default="INFO")
     log_file: str = Field(default="linkedin-discord-bot.log")
     log_file_enabled: bool = Field(default=False)
 
-    # Discord settings
-    discord_token: str = Field(default="")
-    notif_channel_id: int = Field(default=0)
+    # DB Config
+    db_connection_string: str = Field(default="sqlite:///")
+    db_connection_args: Dict[Any, Any] = Field(default={})
 
-    # Proxycurl settings
+    # Discord Config
+    discord_token: str = Field(default="")
+    discord_notif_channel_id: int = Field(default=0)
+
+    # Proxycurl Config
     proxycurl_api_key: str = Field(default="")
+    proxycurl_api_url: str = Field(default="https://nubela.co/proxycurl/api/")
 
     model_config = SettingsConfigDict(
         env_file=".env",

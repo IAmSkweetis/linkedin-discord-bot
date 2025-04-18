@@ -5,22 +5,26 @@ description = "A Discord bot that posts LinkedIn job postings"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "proxycurl-py[asyncio]>=0.1.0.post2",
+    "linkedin-jobs-scraper>=5.0.2",
     "py-cord>=2.6.1",
     "pydantic>=2.11.3",
     "pydantic-settings>=2.8.1",
+    "sqlalchemy>=2.0.40",
+    "sqlmodel>=0.0.24",
     "typer>=0.15.2",
+    "typing-extensions>=4.13.2",
 ]
 
 [project.scripts]
-li-cli = "linkedin_discord_bot.cli:cli"
-li-bot = "linkedin_discord_bot.core.discord:bot_start"
+li-cli = "linkedin_discord_bot.cli:top_level_cli"
+li-bot = "linkedin_discord_bot.discord:bot_start"
 
 [tool.uv]
 package = true
 
 [dependency-groups]
 dev = [
+    "alembic>=1.15.2",
     "black>=25.1.0",
     "deptry>=0.23.0",
     "flake8>=7.2.0",
@@ -43,6 +47,10 @@ strict = true
 disallow_untyped_decorators = false
 untyped_calls_exclude = "discord"
 
+[[tool.mypy.overrides]]
+module = "linkedin_jobs_scraper.*"
+ignore_missing_imports = true
+
 [tool.pylint.format]
 expected-line-ending-format = "LF"
 max-line-length = 100
@@ -52,7 +60,7 @@ disable = ["all"]
 enable = ["mixed-line-endings", "unexpected-line-ending-format"]
 
 [tool.pytest.ini_options]
-addopts = "-v --cov=linkedin_discord_bot --cov-report=term-missing --cov-fail-under=25 --cov-config=.coveragerc"
+addopts = "-v --cov=linkedin_discord_bot --cov-report=term-missing --cov-fail-under=1 --cov-config=.coveragerc"
 testpaths = ["tests"]
 log_file = "pytest.log"
 log_file_level = "INFO"

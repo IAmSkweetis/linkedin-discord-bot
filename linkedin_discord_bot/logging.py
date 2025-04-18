@@ -1,6 +1,6 @@
 import logging
 
-from linkedin_discord_bot.core.settings import bot_settings
+from linkedin_discord_bot.settings import bot_settings
 
 
 def get_logger() -> logging.Logger:
@@ -13,7 +13,7 @@ def get_logger() -> logging.Logger:
     app_logger = logging.getLogger("linkedin-discord-bot")
 
     # Set the logging level
-    app_logger.setLevel(bot_settings.logging_level)
+    app_logger.setLevel(bot_settings.log_level)
 
     # Set the logging format
     log_format = "%(asctime)s %(levelname)s [%(name)s] - %(message)s"

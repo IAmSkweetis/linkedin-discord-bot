@@ -22,6 +22,9 @@ includes:
   tests:
     taskfile: ./tasks/tests/Taskfile.yml
     aliases: ["t"]
+  setup:
+    taskfile: ./tasks/setup/Taskfile.yml
+    aliases: ["s"]
 
 tasks:
   default:

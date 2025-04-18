@@ -12,3 +12,4 @@ tests
 dist
 pytest.xml
 pytest.log
+chromedriver
