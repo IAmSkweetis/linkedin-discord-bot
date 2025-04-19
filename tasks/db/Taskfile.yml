@@ -1,0 +1,52 @@
+version: "3"
+
+vars:
+  DB_NAME: "dev-local.db"
+  DB_PATH: "{{.ROOT_DIR}}/.sqlite/{{.DB_NAME}}"
+  DB_URL: "sqlite://{{.DB_PATH}}"
+
+tasks:
+  default:
+    desc: Lists db tasks
+    dir: "{{.TASKFILE_DIR}}"
+    cmds:
+      - task --list
+
+  delete:
+    desc: Delete the local database
+    aliases: ["d"]
+    cmds:
+      - rm -f {{.DB_PATH}}
+      - echo "Database {{.DB_NAME}} deleted."
+  
+  create:
+    desc: Create the local database
+    aliases: ["c"]
+    cmds:
+      - mkdir -p {{.ROOT_DIR}}/.sqlite
+      - touch {{.DB_PATH}}
+      - echo "Database {{.DB_NAME}} created."
+
+  init:
+    desc: Initialize the local database
+    aliases: ["i"]
+    cmds:
+      - task: delete
+      - task: create
+      - echo "Database {{.DB_NAME}} initialized."
+
+  migrate:
+    desc: Runs the database migrations
+    aliases: ["m"]
+    cmds:
+      - alembic upgrade head
+
+  generate:
+    desc: Generates a new migration
+    aliases: ["g"]
+    vars:
+      GIT_COMMIT:
+        sh: git log -n 1 --format=%h
+    cmds:
+      - alembic revision --autogenerate -m "{{.GIT_COMMIT}}"
+      - echo "Migration {{.GIT_COMMIT}} generated."

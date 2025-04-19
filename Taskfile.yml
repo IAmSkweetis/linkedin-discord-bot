@@ -16,15 +16,19 @@ vars:
 
 
 includes:
+  db:
+    taskfile: ./tasks/db/Taskfile.yml
+    aliases: ["db"]
   docker:
     taskfile: ./tasks/docker/Taskfile.yml
-    aliases: ["d"]
-  tests:
-    taskfile: ./tasks/tests/Taskfile.yml
-    aliases: ["t"]
+    aliases: ["do"]
   setup:
     taskfile: ./tasks/setup/Taskfile.yml
     aliases: ["s"]
+  tests:
+    taskfile: ./tasks/tests/Taskfile.yml
+    aliases: ["t"]
+
 
 tasks:
   default:
