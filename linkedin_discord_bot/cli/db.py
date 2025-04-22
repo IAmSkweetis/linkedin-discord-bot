@@ -7,7 +7,7 @@ db_cli = typer.Typer(help="Commands related to the database.", no_args_is_help=T
 
 
 @db_cli.command(name="init", help="Initialize the database.")
-def init_db() -> None:
+def initialize_database() -> None:
     """Initialize the database."""
     typer.secho(
         f"Initializing the database at {bot_settings.db_connection_string}", fg=typer.colors.GREEN

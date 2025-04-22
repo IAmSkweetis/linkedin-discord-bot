@@ -1,4 +1,5 @@
 import typer
+from prettytable import PrettyTable
 from typing_extensions import Annotated
 
 from linkedin_discord_bot.db import DBClient
@@ -9,6 +10,7 @@ jobs_cli = typer.Typer(help="Commands related to job postings.", no_args_is_help
 @jobs_cli.command(name="list", help="List all registered job postings.")
 def list_jobs() -> None:
     """List all job postings in the database."""
+    typer.secho("Querying for job postings...", fg=typer.colors.GREEN)
 
     db_client = DBClient()
     job_postings = db_client.get_jobs()
@@ -16,18 +18,29 @@ def list_jobs() -> None:
     if not job_postings:
         typer.secho("No job postings found.", fg=typer.colors.RED)
         return
-    for job in job_postings:
-        if job.query_id:
-            job_query = db_client.get_job_query(job.query_id)
 
-        typer.secho(f"Job ID: {job.job_id}", fg=typer.colors.BLUE)
-        if job_query:
-            typer.secho(f"Query: {job_query.query}", fg=typer.colors.BLUE)
-        typer.secho(f"Title: {job.title}", fg=typer.colors.YELLOW)
-        typer.secho(f"Company: {job.company}", fg=typer.colors.YELLOW)
-        typer.secho(f"Location: {job.location}", fg=typer.colors.YELLOW)
-        typer.secho(f"Link: {job.link}", fg=typer.colors.YELLOW)
-        typer.secho("-" * 40, fg=typer.colors.WHITE)
+    pretty_table = PrettyTable()
+    pretty_table.field_names = [
+        "Title",
+        "Company",
+        "Location",
+        "Link",
+        "Date Posted",
+    ]
+
+    for job in job_postings:
+        pretty_table.add_row(
+            [
+                job.title,
+                job.company,
+                job.location,
+                job.link,
+                job.date,
+            ]
+        )
+
+    typer.secho("Here are the job postings in the database:", fg=typer.colors.GREEN)
+    typer.secho(pretty_table)
 
 
 # Job Queries CLI Subcommand
@@ -37,7 +50,6 @@ job_queries_cli = typer.Typer(help="Commands related to job queries.", no_args_i
 @job_queries_cli.command(name="list", help="List all registered job search queries.")
 def list_job_queries() -> None:
     """List all job queries."""
-    # Placeholder for the actual implementation
     typer.secho("Querying for job searches...", fg=typer.colors.GREEN)
 
     db_client = DBClient()
@@ -47,13 +59,36 @@ def list_job_queries() -> None:
         typer.secho("No job queries found.", fg=typer.colors.RED)
         return
 
+    pretty_table = PrettyTable()
+    pretty_table.field_names = [
+        "ID",
+        "Query",
+        "Locations",
+        "Games Only",
+        "Remote Only",
+        "Experience",
+        "Creator Discord ID",
+        "Creation Date",
+        "Job Postings",
+    ]
+
     for job_query in job_queries:
-        typer.secho(f"Job Query ID: {job_query.id}", fg=typer.colors.BLUE)
-        typer.secho(f"Query: {job_query.query}", fg=typer.colors.YELLOW)
-        typer.secho(f"Locations: {job_query.locations}", fg=typer.colors.YELLOW)
-        typer.secho(f"Games Only: {job_query.games_only}", fg=typer.colors.YELLOW)
-        typer.secho(f"Remote Only: {job_query.remote_only}", fg=typer.colors.YELLOW)
-        typer.secho("-" * 40, fg=typer.colors.WHITE)
+        pretty_table.add_row(
+            [
+                str(job_query.id),
+                job_query.query,
+                job_query.locations,
+                job_query.games_only,
+                job_query.remote_only,
+                job_query.experience,
+                job_query.creator_discord_id,
+                job_query.creation_date,
+                len(db_client.get_jobs(job_query_id=job_query.id)),
+            ]
+        )
+
+    typer.secho("Here are the job queries in the database:", fg=typer.colors.GREEN)
+    typer.secho(pretty_table)
 
 
 @job_queries_cli.command(name="create", help="Add a new job search query.")
@@ -95,7 +130,6 @@ def search_job_query(
     ] = "United States",
 ) -> None:
     """Search for a job query."""
-    # Placeholder for the actual implementation
     typer.secho("Searching for job queries...", fg=typer.colors.GREEN)
 
     db_client = DBClient()
@@ -110,6 +144,69 @@ def search_job_query(
     typer.secho(f"Locations: {job_query.locations}", fg=typer.colors.YELLOW)
     typer.secho(f"Games Only: {job_query.games_only}", fg=typer.colors.YELLOW)
     typer.secho(f"Remote Only: {job_query.remote_only}", fg=typer.colors.YELLOW)
+
+
+@job_queries_cli.command(name="delete", help="Delete a job search query.")
+def delete_job_query(
+    query_id: str = typer.Option("", help="The ID of the job search query to delete."),
+) -> None:
+    """Delete a job query."""
+
+    db_client = DBClient()
+
+    if not query_id:
+        typer.secho("No Job Query ID Provided.", fg=typer.colors.RED)
+
+        query = typer.prompt(
+            "Enter the job search query string (e.g., 'Software Engineer'): ",
+            default="Software Engineer",
+            type=str,
+        )
+        locations = typer.prompt(
+            "Enter the locations to search (comma separated, e.g., 'United States, Canada'): ",
+            default="United States",
+            type=str,
+        )
+        games_only = typer.confirm(
+            "Do you want to search for games only?",
+            default=False,
+        )
+        remote_only = typer.confirm(
+            "Do you want to search for remote jobs only?",
+            default=False,
+        )
+
+        job_query = db_client.get_job_query_by_query(
+            query=query, locations=locations, games_only=games_only, remote_only=remote_only
+        )
+
+        if not job_query:
+            typer.secho("No job queries found.", fg=typer.colors.RED)
+            return
+        query_id = str(job_query.id)
+
+    job_query = db_client.get_job_query(job_query_id=query_id)
+
+    if not job_query:
+        typer.secho("No job queries found.", fg=typer.colors.RED)
+        return
+
+    typer.secho(f"Job Query ID: {job_query.id}", fg=typer.colors.BLUE)
+    typer.secho(f"Query: {job_query.query}", fg=typer.colors.YELLOW)
+    typer.secho(f"Locations: {job_query.locations}", fg=typer.colors.YELLOW)
+    typer.secho(f"Games Only: {job_query.games_only}", fg=typer.colors.YELLOW)
+    typer.secho(f"Remote Only: {job_query.remote_only}", fg=typer.colors.YELLOW)
+    typer.secho(f"Experience: {job_query.experience}", fg=typer.colors.YELLOW)
+    typer.secho(f"Creator Discord ID: {job_query.creator_discord_id}", fg=typer.colors.YELLOW)
+    typer.secho(f"Creation Date: {job_query.creation_date}", fg=typer.colors.YELLOW)
+
+    typer.confirm(
+        f"Are you sure you want to delete the job query with ID: {job_query.id}?",
+        abort=True,
+    )
+
+    db_client.delete_job_query(job_query_id=query_id)
+    typer.secho(f"Deleted job query with ID: {query_id}", fg=typer.colors.GREEN)
 
 
 # Add our subcommands to the main jobs CLI

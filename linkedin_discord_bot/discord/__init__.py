@@ -1,5 +1,4 @@
-from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from discord import Bot, Color, Embed, TextChannel
 
@@ -20,50 +19,28 @@ class LinkedInDiscordBot(Bot):
 
         # Attempt to initialize the database
         LOG.info("Initializing database")
-        DBClient()
+        self.db_client = DBClient()
 
         # Load cogs
+        active_cogs = [
+            "linkedin_discord_bot.discord.cogs.commands.job",
+            "linkedin_discord_bot.discord.cogs.commands.query",
+        ]
+
         LOG.info("Loading cogs")
-        loaded_cogs = self.__cog_loader()
-        LOG.info(f"Loaded {len(loaded_cogs)} cogs: {', '.join(loaded_cogs)}")
+        for cog in active_cogs:
+            try:
+                self.load_extension(cog)
+                LOG.info(f"Loaded cog: {cog}")
+            except Exception as err:
+                LOG.error(f"Failed to load cog {cog}: {err}")
 
         LOG.info("LinkedIn Discord Bot initialized")
-
-    def __cog_loader(self) -> List[str]:
-        """Internal cog loader.
-
-        This method loads all cogs in the `cogs/commands` directory.
-        """
-        cogs_path = Path(__file__).parent / "cogs"
-
-        # TODO: Eventually, we'll have different cog types. Such as having a task cog.
-        command_cogs = cogs_path / "commands"
-
-        cog_list: List[str] = []
-
-        for path in command_cogs.iterdir():
-            LOG.debug(f"Found path: {path}")
-            if path.is_file() and path.suffix == ".py" and path.stem != "__init__":
-                LOG.debug(f"Adding path: {path.stem}")
-                cog_list.append(path.stem)
-
-            else:
-                LOG.debug(f"Skipping path: {path}")
-
-        if not cog_list:
-            LOG.error("No cogs found")
-
-        for cog in cog_list:
-            LOG.debug(f"Loading cog: {cog}")
-            self.load_extension(f"linkedin_discord_bot.discord.cogs.commands.{cog}")
-
-        return cog_list
 
     # Discord event handlers
     async def on_ready(self) -> None:
 
         LOG.info(f"Connected to Discord as {self.user}")
-        LOG.debug(f"Discord Token: {bot_settings.discord_token}")
         LOG.info(f"Discord notification channel ID: {bot_settings.discord_notif_channel_id}")
 
         notif_channel = self.get_channel(bot_settings.discord_notif_channel_id)
@@ -98,7 +75,7 @@ class LinkedInDiscordBot(Bot):
         LOG.info("LinkedIn Discord Bot is online")
 
 
-def bot_start() -> None:
+def start_linkedin_discord_bot() -> None:
     """Run the LinkedIn Discord Bot."""
     LOG.info("Starting LinkedIn Discord Bot")
     bot = LinkedInDiscordBot()
