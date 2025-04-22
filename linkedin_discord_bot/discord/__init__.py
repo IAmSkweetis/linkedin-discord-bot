@@ -75,7 +75,7 @@ class LinkedInDiscordBot(Bot):
         LOG.info("LinkedIn Discord Bot is online")
 
 
-def bot_start() -> None:
+def start_linkedin_discord_bot() -> None:
     """Run the LinkedIn Discord Bot."""
     LOG.info("Starting LinkedIn Discord Bot")
     bot = LinkedInDiscordBot()

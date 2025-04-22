@@ -12,7 +12,7 @@ class JobCog(Cog, name="Job"):
 
     # Job top-level Commands
     @job_commands.command(name="list", help="Returns a list of all jobs.")
-    async def job_list(self, ctx: ApplicationContext) -> None:
+    async def list_jobs(self, ctx: ApplicationContext) -> None:
         await ctx.respond("Here's all the jobs I found!")
 
 

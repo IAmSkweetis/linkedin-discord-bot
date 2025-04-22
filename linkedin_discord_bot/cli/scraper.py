@@ -6,7 +6,7 @@ scraper_cli = typer.Typer(help="Commands related to the LinkedIn scraper.", no_a
 
 
 @scraper_cli.command(name="run", help="Start the LinkedIn scraper.")
-def run_scraper() -> None:
+def run_linkedin_scraper() -> None:
     """Start the LinkedIn scraper."""
 
     # Placeholder for the actual implementation

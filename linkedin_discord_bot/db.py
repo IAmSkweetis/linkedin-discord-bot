@@ -166,13 +166,8 @@ class DBClient:
             LOG.warning(f"Error deleting job query with ID {job_query_id}.")
             LOG.error(err)
             self.db_session.rollback()
-
-    def job_exists_in_db(self, job_id: int) -> bool:
-        """Check if a job query exists in the database."""
-        LOG.debug(f"Checking if job with ID {job_id} exists in the database.")
-        with self.db_session:
-            job = self.db_session.exec(select(Job).where(Job.job_id == job_id)).first()
-        return job is not None
+        finally:
+            self.db_session.close()
 
     def get_job(self, job_id: int) -> Job | None:
         """Get a job query by its ID."""
@@ -196,10 +191,6 @@ class DBClient:
     def create_job(self, job: Job) -> None:
         """Create a job query for the given locations."""
         LOG.debug(f"Creating job: {job.job_id}")
-
-        if self.job_exists_in_db(job.job_id):
-            LOG.debug(f"Job {job.job_id} already exists in the database.")
-            return
 
         try:
             self.db_session.add(job)

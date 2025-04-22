@@ -96,7 +96,7 @@ class JobQueryCog(Cog, name="JobQuery"):
     job_query_commands = SlashCommandGroup(name="query", desc="Commands related to job queries.")
 
     @job_query_commands.command(name="list", help="List all registered job search queries.")
-    async def job_query_list(self, ctx: ApplicationContext) -> None:
+    async def list_job_queries(self, ctx: ApplicationContext) -> None:
         """List all job queries."""
         await ctx.respond("Checking the database for job queries...", ephemeral=True)
         job_queries = self.li_bot.db_client.get_job_queries()
@@ -122,7 +122,7 @@ class JobQueryCog(Cog, name="JobQuery"):
         await ctx.send_followup(f"```{table}```", ephemeral=True)
 
     @job_query_commands.command(name="create", help="Add a new job search query.")
-    async def job_query_create(self, ctx: ApplicationContext) -> None:
+    async def create_job_query(self, ctx: ApplicationContext) -> None:
         """Add a new job query."""
         # await ctx.respond("Adding the job query...", ephemeral=True)
         # self.li_bot.db_client.create_job_query(query, locations, games_only, remote_only)
