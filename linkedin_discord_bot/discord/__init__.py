@@ -41,7 +41,6 @@ class LinkedInDiscordBot(Bot):
     async def on_ready(self) -> None:
 
         LOG.info(f"Connected to Discord as {self.user}")
-        LOG.debug(f"Discord Token: {bot_settings.discord_token}")
         LOG.info(f"Discord notification channel ID: {bot_settings.discord_notif_channel_id}")
 
         notif_channel = self.get_channel(bot_settings.discord_notif_channel_id)

@@ -1,7 +1,8 @@
+import datetime
 import uuid
 from typing import Any, Dict, List
 
-from linkedin_jobs_scraper.filters.filters import ExperienceLevelFilters, OnSiteOrRemoteFilters
+from linkedin_jobs_scraper.filters.filters import ExperienceLevelFilters
 from sqlalchemy import Engine
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, SQLModel, create_engine, select
@@ -91,7 +92,8 @@ class DBClient:
         self,
         query: str,
         locations: str = "United States",
-        on_site_or_remote: OnSiteOrRemoteFilters = OnSiteOrRemoteFilters.REMOTE,
+        games_only: bool = False,
+        remote_only: bool = False,
         experience: ExperienceLevelFilters = ExperienceLevelFilters.MID_SENIOR,
     ) -> JobQuery | None:
         """Get a job query by its query string."""
@@ -101,7 +103,8 @@ class DBClient:
                 select(JobQuery)
                 .where(JobQuery.query == query)
                 .where(JobQuery.locations == locations)
-                .where(JobQuery.remote_only == on_site_or_remote)
+                .where(JobQuery.games_only == games_only)
+                .where(JobQuery.remote_only == remote_only)
                 .where(JobQuery.experience == experience)
             ).first()
         return job_query
@@ -113,6 +116,8 @@ class DBClient:
         games_only: bool = False,
         remote_only: bool = False,
         experience: ExperienceLevelFilters = ExperienceLevelFilters.MID_SENIOR,
+        creator_discord_id: int = 0,
+        creation_date: datetime.datetime | None = None,
     ) -> None:
         """Create a job query for the given locations."""
 
@@ -122,6 +127,8 @@ class DBClient:
             games_only=games_only,
             remote_only=remote_only,
             experience=experience,
+            creator_discord_id=creator_discord_id,
+            creation_date=creation_date or datetime.datetime.now(datetime.timezone.utc),
         )
 
         LOG.debug(f"Creating job query: {job_query}")
@@ -130,12 +137,35 @@ class DBClient:
             self.db_session.commit()
             self.db_session.refresh(job_query)
         except IntegrityError as err:
-            LOG.warning(f"Job query already exists: {err}")
-            LOG.debug(err)
+            LOG.warning(f"Job query with query of {job_query.query} already exists.")
+            LOG.error(err)
             self.db_session.rollback()
-            raise LinkedInBotDatabaseError(f"Job query already exists: {err}")
         finally:
             self.db_session.close()
+
+    def delete_job_query(self, job_query_id: str | uuid.UUID) -> None:
+        """Delete a job query by its ID."""
+        if isinstance(job_query_id, str):
+            try:
+                job_query_id = uuid.UUID(job_query_id)
+            except ValueError:
+                LOG.error(f"Invalid UUID string: {job_query_id}")
+                return
+
+        LOG.debug(f"Deleting job query with ID: {job_query_id}")
+        try:
+            job_query = self.db_session.exec(
+                select(JobQuery).where(JobQuery.id == job_query_id)
+            ).first()
+            if job_query:
+                self.db_session.delete(job_query)
+                self.db_session.commit()
+            else:
+                LOG.warning(f"Job query with ID {job_query_id} not found.")
+        except Exception as err:
+            LOG.warning(f"Error deleting job query with ID {job_query_id}.")
+            LOG.error(err)
+            self.db_session.rollback()
 
     def job_exists_in_db(self, job_id: int) -> bool:
         """Check if a job query exists in the database."""

@@ -1,3 +1,4 @@
+import datetime
 import uuid
 
 from linkedin_jobs_scraper.filters.filters import ExperienceLevelFilters
@@ -24,7 +25,13 @@ class JobQueryBase(BaseModel):
         title="Filter for on-site or remote jobs",
         description="If true, only remote jobs will be returned",
     )
-    experience: ExperienceLevelFilters = Field(..., title="Filter for experience level")
+    experience: ExperienceLevelFilters = Field(
+        default=ExperienceLevelFilters.MID_SENIOR, title="Filter for experience level"
+    )
+    creator_discord_id: int = Field(..., title="Discord ID of the creator")
+    creation_date: datetime.datetime = Field(
+        default=datetime.datetime.now(datetime.timezone.utc), title="Creation date of the job query"
+    )
 
 
 class JobQuery(JobQueryBase, table=True):
