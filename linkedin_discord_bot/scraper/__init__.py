@@ -87,11 +87,11 @@ class Scraper:
             with db_client.db_session:
                 # Filter jobs that do not have a query_id
                 for job in jobs:
-                    if job.query_id == job_query.id:
+                    if job.job_query_id == job_query.id:
                         LOG.debug("Query already has correct query_id")
                         continue
                     LOG.debug(f"Updating job {job.job_id} with query_id {job_query.id}")
-                    job.query_id = job_query.id
+                    job.job_query_id = job_query.id
                     db_client.db_session.add(job)
                     db_client.db_session.commit()
                     db_client.db_session.refresh(job)

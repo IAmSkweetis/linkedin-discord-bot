@@ -10,6 +10,7 @@ jobs_cli = typer.Typer(help="Commands related to job postings.", no_args_is_help
 @jobs_cli.command(name="list", help="List all registered job postings.")
 def list_jobs() -> None:
     """List all job postings in the database."""
+    typer.secho("Querying for job postings...", fg=typer.colors.GREEN)
 
     db_client = DBClient()
     job_postings = db_client.get_jobs()
@@ -17,18 +18,29 @@ def list_jobs() -> None:
     if not job_postings:
         typer.secho("No job postings found.", fg=typer.colors.RED)
         return
-    for job in job_postings:
-        if job.query_id:
-            job_query = db_client.get_job_query(job.query_id)
 
-        typer.secho(f"Job ID: {job.job_id}", fg=typer.colors.BLUE)
-        if job_query:
-            typer.secho(f"Query: {job_query.query}", fg=typer.colors.BLUE)
-        typer.secho(f"Title: {job.title}", fg=typer.colors.YELLOW)
-        typer.secho(f"Company: {job.company}", fg=typer.colors.YELLOW)
-        typer.secho(f"Location: {job.location}", fg=typer.colors.YELLOW)
-        typer.secho(f"Link: {job.link}", fg=typer.colors.YELLOW)
-        typer.secho("-" * 40, fg=typer.colors.WHITE)
+    pretty_table = PrettyTable()
+    pretty_table.field_names = [
+        "Title",
+        "Company",
+        "Location",
+        "Link",
+        "Date Posted",
+    ]
+
+    for job in job_postings:
+        pretty_table.add_row(
+            [
+                job.title,
+                job.company,
+                job.location,
+                job.link,
+                job.date,
+            ]
+        )
+
+    typer.secho("Here are the job postings in the database:", fg=typer.colors.GREEN)
+    typer.secho(pretty_table)
 
 
 # Job Queries CLI Subcommand
@@ -57,6 +69,7 @@ def list_job_queries() -> None:
         "Experience",
         "Creator Discord ID",
         "Creation Date",
+        "Job Postings",
     ]
 
     for job_query in job_queries:
@@ -70,6 +83,7 @@ def list_job_queries() -> None:
                 job_query.experience,
                 job_query.creator_discord_id,
                 job_query.creation_date,
+                len(db_client.get_jobs(job_query_id=job_query.id)),
             ]
         )
 

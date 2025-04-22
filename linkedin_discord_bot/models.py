@@ -1,9 +1,10 @@
 import datetime
 import uuid
+from typing import List
 
 from linkedin_jobs_scraper.filters.filters import ExperienceLevelFilters
 from pydantic.alias_generators import to_camel
-from sqlmodel import Field, SQLModel
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class BaseModel(SQLModel):
@@ -37,11 +38,14 @@ class JobQueryBase(BaseModel):
 class JobQuery(JobQueryBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
 
+    jobs: List["Job"] = Relationship(back_populates="job_query")
+
 
 class Job(BaseModel, table=True):
-    job_id: int = Field(..., title="Unique identifier for the job", primary_key=True)
-    query_id: uuid.UUID | None = Field(
-        default=None, foreign_key="jobquery.id", title="ID of the job query"
+    job_id: int = Field(
+        ...,
+        title="Unique identifier for the job. Also correlates to the LinkedIn job ID.",
+        primary_key=True,
     )
     location: str = Field(..., title="Location of the job listing")
     link: str = Field(..., title="URL to the job listing")
@@ -55,3 +59,8 @@ class Job(BaseModel, table=True):
     description_html: str = Field(..., title="HTML description of the job")
     date: str = Field(..., title="Date the job was posted")
     date_text: str = Field(..., title="Text representation of the date")
+
+    job_query_id: uuid.UUID | None = Field(
+        default=None, foreign_key="jobquery.id", title="ID of the job query"
+    )
+    job_query: JobQuery | None = Relationship(back_populates="jobs")

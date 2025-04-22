@@ -143,6 +143,20 @@ class DBClient:
         finally:
             self.db_session.close()
 
+    def create_job_query_from_object(self, job_query: JobQuery) -> None:
+        """Create a job query for the given locations."""
+        LOG.debug(f"Creating job query: {job_query}")
+        try:
+            self.db_session.add(job_query)
+            self.db_session.commit()
+            self.db_session.refresh(job_query)
+        except IntegrityError as err:
+            LOG.warning(f"Job query with query of {job_query.query} already exists.")
+            LOG.error(err)
+            self.db_session.rollback()
+        finally:
+            self.db_session.close()
+
     def delete_job_query(self, job_query_id: str | uuid.UUID) -> None:
         """Delete a job query by its ID."""
         if isinstance(job_query_id, str):
@@ -176,15 +190,20 @@ class DBClient:
             job = self.db_session.exec(select(Job).where(Job.job_id == job_id)).first()
         return job
 
-    def get_jobs(self, query_id: uuid.UUID | None = None) -> List[Job]:
+    def get_jobs(self, job_query_id: uuid.UUID | str | None = None) -> List[Job]:
         """Get all job queries."""
         LOG.debug("Fetching all jobs from the database.")
         with self.db_session:
-            if query_id is None:
+            if job_query_id is None:
                 job_queries = self.db_session.exec(select(Job)).all()
             else:
+                if isinstance(job_query_id, str):
+                    # Attempt to convert the string to a UUID. We are not catching the exception here
+                    # because we want to raise an error if the conversion fails.
+                    job_query_id = uuid.UUID(job_query_id)
+
                 job_queries = self.db_session.exec(
-                    select(Job).where(Job.query_id == query_id)
+                    select(Job).where(Job.job_query_id == job_query_id)
                 ).all()
         return list(job_queries)
 
