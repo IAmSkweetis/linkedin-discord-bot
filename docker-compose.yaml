@@ -1,7 +1,47 @@
 name: linkedin-discord-bot
 services:
-  li-discord:
-    container_name: li-discord
+  lidb-bot:
+    container_name: lidb-bot
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: ghcr.io/iamskweetis/linkedin-discord-bot:dev-local
+    command: ["bot", "start"]
     env_file:
       - .env
+    environment:
+      LINKEDIN_DISCORD_BOT_DB_CONNECTION_STRING: "postgresql+psycopg://postgres:postgres@lidb-db:5432/lidb"
+    depends_on:
+      lidb-db:
+        condition: service_healthy
+    networks:
+      - lidb-net
+
+  lidb-db:
+    container_name: lidb-db
+    image: postgres:17
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=lidb
+      - POSTGRES_USER=postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    user: postgres
+    networks:
+      - lidb-net
+
+networks:
+  lidb-net:
+
+volumes:
+  pgdata:
+    driver: local
