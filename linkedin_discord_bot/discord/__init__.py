@@ -11,15 +11,19 @@ from linkedin_discord_bot.settings import bot_settings
 
 class LinkedInDiscordBot(Bot):
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, db_client: DBClient | None = None, **kwargs: Any) -> None:
 
         # Init the bot
         LOG.info("Initializing LinkedIn Discord Bot")
         super().__init__(*args, **kwargs)  # type: ignore
 
         # Attempt to initialize the database
-        LOG.info("Initializing database")
-        self.db_client = DBClient()
+        if db_client is None:
+            LOG.info("Initializing database")
+            self.db_client = DBClient()
+        else:
+            LOG.info("Using provided database client")
+            self.db_client = db_client
 
         # Load cogs
         active_cogs = [

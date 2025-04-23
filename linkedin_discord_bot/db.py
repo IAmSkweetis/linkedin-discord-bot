@@ -21,17 +21,35 @@ class DBClient:
 
     def __init__(
         self,
-        db_connection_string: str = bot_settings.db_connection_string,
-        db_connection_args: Dict[Any, Any] = bot_settings.db_connection_args,
+        db_connection_string: str | None = bot_settings.db_connection_string,
+        db_connection_args: Dict[Any, Any] | None = bot_settings.db_connection_args,
+        db_engine: Engine | None = None,
+        db_session: Session | None = None,
     ) -> None:
-        LOG.debug(f"Database connection string: {db_connection_string}")
-        LOG.debug(f"Database connection args: {db_connection_args}")
 
-        self.db_connection_string = db_connection_string
-        self.db_connection_args = db_connection_args
-        self.db_engine = create_engine(db_connection_string, connect_args=db_connection_args)
+        if all(arg is None for arg in (db_connection_string, db_connection_args, db_engine)):
+            raise LinkedInBotDatabaseError(
+                "At least one of db_connection_string, db_connection_args, or db_engine must be "
+                "provided."
+            )
 
-        SQLModel.metadata.create_all(self.db_engine)
+        if db_engine is not None:
+            self.db_engine = db_engine
+        else:
+            LOG.debug(f"Database connection string: {db_connection_string}")
+            LOG.debug(f"Database connection args: {db_connection_args}")
+
+            if db_connection_string is None or db_connection_args is None:
+                raise LinkedInBotDatabaseError(
+                    "db_connection_string and db_connection_args must be provided if db_engine is "
+                    "not provided."
+                )
+
+            self.db_connection_string = db_connection_string
+            self.db_connection_args = db_connection_args
+            self.db_engine = create_engine(db_connection_string, connect_args=db_connection_args)
+
+            SQLModel.metadata.create_all(self.db_engine)
 
         # Verify that the database is created and accessible
         if not self.verify_db():
@@ -40,7 +58,11 @@ class DBClient:
 
         LOG.debug("Database initialized successfully.")
 
-        self.db_session = self.get_db_session()
+        if db_session is not None:
+            self.db_session = db_session
+        else:
+            LOG.debug("Creating a new database session.")
+            self.db_session = self.get_db_session()
 
     def get_db_session(self) -> Session:
         return Session(self.db_engine)
@@ -62,15 +84,19 @@ class DBClient:
                 return True
 
         except Exception as err:
-            LOG.error(f"Database verification failed: {err}")
-            LOG.error(type(err))
+            LOG.error(f"Database verification failed due to an exception: {err}")
+            LOG.debug(f"Exception type: {type(err)}")
             return False
 
     def get_job_queries(self) -> List[JobQuery]:
         LOG.debug("Fetching all job queries from the database.")
-        with self.db_session:
-            job_queries = self.db_session.exec(select(JobQuery)).all()
-        return list(job_queries)
+        try:
+            with self.db_session:
+                job_queries = self.db_session.exec(select(JobQuery)).all()
+            return list(job_queries)
+        except Exception as err:
+            LOG.error(f"Error fetching job queries: {err}")
+            return []
 
     def get_job_query(self, job_query_id: str | uuid.UUID) -> JobQuery | None:
         """Get a job query by its ID."""
@@ -159,15 +185,16 @@ class DBClient:
 
     def delete_job_query(self, job_query_id: str | uuid.UUID) -> None:
         """Delete a job query by its ID."""
-        if isinstance(job_query_id, str):
-            try:
-                job_query_id = uuid.UUID(job_query_id)
-            except ValueError:
-                LOG.error(f"Invalid UUID string: {job_query_id}")
-                return
-
-        LOG.debug(f"Deleting job query with ID: {job_query_id}")
         try:
+            if isinstance(job_query_id, str):
+                try:
+                    job_query_id = uuid.UUID(job_query_id)
+                except ValueError:
+                    LOG.error(f"Invalid UUID string: {job_query_id}")
+                    self.db_session.close()
+                    return
+
+            LOG.debug(f"Deleting job query with ID: {job_query_id}")
             job_query = self.db_session.exec(
                 select(JobQuery).where(JobQuery.id == job_query_id)
             ).first()
