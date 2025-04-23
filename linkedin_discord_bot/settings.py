@@ -21,10 +21,12 @@ class Settings(BaseSettings):
     # Discord Config
     discord_token: str = Field(default="")
     discord_notif_channel_id: int = Field(default=0)
+    discord_scraper_frequency: int = Field(default=86400)
 
-    # Proxycurl Config
-    proxycurl_api_key: str = Field(default="")
-    proxycurl_api_url: str = Field(default="https://nubela.co/proxycurl/api/")
+    # NOTE: The following settings are commented out because they are not used in the current implementation.
+    # LinkedIn Config
+    # linkedin_username: str = Field(default="")
+    # linkedin_password: str = Field(default="")
 
     model_config = SettingsConfigDict(
         env_file=".env",

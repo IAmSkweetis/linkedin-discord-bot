@@ -243,7 +243,7 @@ class DBClient:
             self.db_session.commit()
             self.db_session.refresh(job)
         except IntegrityError as err:
-            LOG.warning(f"Job already exists: {err}")
+            LOG.debug(f"Job already exists: {err}")
             LOG.debug(err)
             self.db_session.rollback()
             raise LinkedInBotDatabaseError(f"Job already exists: {err}")
