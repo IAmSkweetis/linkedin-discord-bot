@@ -22,7 +22,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.scripts]
-lidb = "linkedin_discord_bot.cli:top_level_cli"
+lidb = "linkedin_discord_bot.cli.main:top_level_cli"
 
 [tool.hatch.version]
 path = "linkedin_discord_bot/__init__.py"
