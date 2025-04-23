@@ -1,6 +1,7 @@
 from linkedin_jobs_scraper.events import EventData, EventMetrics
 
 from linkedin_discord_bot.db import DBClient
+from linkedin_discord_bot.exceptions import LinkedInBotDatabaseError
 from linkedin_discord_bot.logging import LOG
 from linkedin_discord_bot.models import Job
 from linkedin_discord_bot.utils import sanitize_url
@@ -32,7 +33,12 @@ def on_data(data: EventData) -> None:
 
     LOG.debug(f"[ON_DATA] Adding job to DB: {job.job_id}")
 
-    db_client.create_job(job)
+    try:
+        db_client.create_job(job)
+    except LinkedInBotDatabaseError:
+        LOG.debug(f"[ON_DATA] Job already exists in DB: {job.job_id}")
+    else:
+        LOG.debug(f"[ON_DATA] Job added to DB: {job.job_id}")
 
 
 def on_metrics(metrics: EventMetrics) -> None:

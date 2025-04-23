@@ -29,6 +29,7 @@ class LinkedInDiscordBot(Bot):
         active_cogs = [
             "linkedin_discord_bot.discord.cogs.commands.job",
             "linkedin_discord_bot.discord.cogs.commands.query",
+            "linkedin_discord_bot.discord.cogs.tasks.scraper",
         ]
 
         LOG.info("Loading cogs")
