@@ -412,7 +412,6 @@ wheels = [
 
 [[package]]
 name = "linkedin-discord-bot"
-version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "linkedin-jobs-scraper" },

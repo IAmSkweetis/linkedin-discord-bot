@@ -1,0 +1,44 @@
+version: "3"
+
+tasks:
+  default:
+    desc: Lists release tasks
+    dir: "{{.TASKFILE_DIR}}"
+    cmds:
+      - task --list
+
+  clean:
+    aliases: ["c"]
+    desc: Clean the dist directory
+    cmds:
+      - rm -rf dist
+      - echo "Cleaned dist directory."
+
+  build:
+    aliases: ["b"]
+    desc: Build the project
+    cmds:
+      - task: clean
+      - uv build
+      - echo "Build complete. The package is located in the dist directory."
+    generates:
+      - dist
+      - dist/{{.PKG_NAME}}-{{.PKG_VERSION}}.tar.gz
+      - dist/{{.PKG_NAME}}-{{.PKG_VERSION}}-py3-none-any.whl
+
+  pypi-publish:
+    aliases: ["pp"]
+    desc: Publish the package to PyPI
+    cmds:
+      - task: build
+      - echo "Publishing to PyPI..."
+      - uv publish {{.CLI_ARGS}}
+      - echo "Package published successfully."
+
+  version:
+    aliases: ["v"]
+    desc: Bump the package version
+    cmds:
+      - echo "Current version {{.PKG_VERSION}}"
+      - echo "Bumping version..."
+      - uvx hatch version {{.CLI_ARGS | default "patch"}}

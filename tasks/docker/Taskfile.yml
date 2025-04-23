@@ -25,7 +25,7 @@ tasks:
         docker build \
           --build-arg PYTHON_VERSION={{.PYTHON_VERSION}} \
           --build-arg PKG_NAME={{.PKG_NAME}} \
-          --build-arg PKG_VERSION={{.PKG_VERSION}} \
+          --build-arg PKG_VERSION=v{{.PKG_VERSION}} \
           --build-arg GIT_REPO_URL={{.GIT_REPO_URL}} \
           --build-arg GIT_COMMIT_SHA={{.GIT_COMMIT_SHA}} \
           --build-arg DKR_BUILD_DATE={{.DKR_BUILD_DATE}} \
@@ -54,8 +54,8 @@ tasks:
     cmds:
       - task: :docker:build
         vars:
-          DKR_BUILD_VERSION: "{{.PKG_VERSION}}"
-      - docker tag {{.DKR_IMAGE_NAME}}:{{.PKG_VERSION}} {{.DKR_IMAGE_NAME}}:latest
+          DKR_BUILD_VERSION: "v{{.PKG_VERSION}}"
+      - docker tag {{.DKR_IMAGE_NAME}}:v{{.PKG_VERSION}} {{.DKR_IMAGE_NAME}}:latest
 
   login:
     desc: Log in to the Docker registry
@@ -72,7 +72,7 @@ tasks:
     deps:
       - :docker:login
     cmds:
-      - docker push {{.DKR_IMAGE_NAME}}:{{.PKG_VERSION}}
+      - docker push {{.DKR_IMAGE_NAME}}:v{{.PKG_VERSION}}
       - docker push {{.DKR_IMAGE_NAME}}:latest
 
   run:
@@ -82,7 +82,7 @@ tasks:
       vars:
         - DKR_BUILD_VERSION
     cmds:
-      - docker run --rm -it {{.DKR_IMAGE_NAME}}:{{.DKR_BUILD_VERSION}}
+      - docker run --rm -it {{.DKR_IMAGE_NAME}}:v{{.DKR_BUILD_VERSION}}
 
   run-local:
     desc: Run the Docker Image locally
