@@ -1,9 +1,11 @@
 # Build args
-ARG PYTHON_VERSION=3.12.9
-
+ARG PYTHON_VERSION=3.12.10
 
 #### Base ####
 FROM python:${PYTHON_VERSION}-slim AS base
+
+ENV CHROME_VERSION=125.0.6422.141-1
+ENV CHROMEDRIVER_VERSION=125.0.6422.141
 
 SHELL ["/bin/bash", "-eo", "pipefail", "-c"]
 
@@ -12,6 +14,15 @@ RUN apt-get update -y \
     && apt-get install -y \
     --no-install-recommends \
     curl \
+    unzip \
+    && curl -sSL http://dl.google.com/linux/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}_amd64.deb -o /tmp/chrome.deb \
+    && curl -sSL https://storage.googleapis.com/chrome-for-testing-public/${CHROMEDRIVER_VERSION}/linux64/chromedriver-linux64.zip -o /tmp/chromedriver.zip \
+    && apt-get install -y /tmp/chrome.deb \
+    && unzip /tmp/chromedriver.zip -d /tmp/chromedriver \
+    && rm /tmp/chrome.deb \
+    && rm /tmp/chromedriver.zip \
+    && mv /tmp/chromedriver/chromedriver-linux64/chromedriver /usr/bin/chromedriver \
+    && chmod +x /usr/bin/chromedriver \
     && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
