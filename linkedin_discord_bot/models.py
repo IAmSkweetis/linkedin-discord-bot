@@ -4,6 +4,7 @@ from typing import List
 
 from linkedin_jobs_scraper.filters.filters import ExperienceLevelFilters
 from pydantic.alias_generators import to_camel
+from sqlalchemy.types import BIGINT
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -29,7 +30,7 @@ class JobQueryBase(BaseModel):
     experience: ExperienceLevelFilters = Field(
         default=ExperienceLevelFilters.MID_SENIOR, title="Filter for experience level"
     )
-    creator_discord_id: int = Field(..., title="Discord ID of the creator")
+    creator_discord_id: int = Field(..., title="Discord ID of the creator", sa_type=BIGINT)
     creation_date: datetime.datetime = Field(
         default=datetime.datetime.now(datetime.timezone.utc), title="Creation date of the job query"
     )
@@ -46,6 +47,7 @@ class Job(BaseModel, table=True):
         ...,
         title="Unique identifier for the job. Also correlates to the LinkedIn job ID.",
         primary_key=True,
+        sa_type=BIGINT,
     )
     location: str = Field(..., title="Location of the job listing")
     link: str = Field(..., title="URL to the job listing")
