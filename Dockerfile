@@ -78,7 +78,7 @@ COPY --from=builder --chown=tucker:tucker /app/ /app/
 # TODO: Make this a real healthcheck
 HEALTHCHECK --interval=5m --timeout=3s CMD python -c 'print("ok")' || exit 1
 
-ENTRYPOINT ["li-bot"]
+ENTRYPOINT ["lidb"]
 CMD []
 
 # Metadata

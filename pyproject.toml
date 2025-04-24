@@ -6,10 +6,13 @@ build-backend = "hatchling.build"
 name = "linkedin-discord-bot"
 description = "A Discord bot that posts LinkedIn job postings"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     "linkedin-jobs-scraper>=5.0.2",
     "prettytable>=3.16.0",
+    "psycopg[binary]>=3.2.6",
     "py-cord>=2.6.1",
     "pydantic>=2.11.3",
     "pydantic-settings>=2.8.1",
@@ -23,6 +26,12 @@ dynamic = ["version"]
 
 [project.scripts]
 lidb = "linkedin_discord_bot.cli.main:top_level_cli"
+
+[project.urls]
+homepage = "https://github.com/IAmSkweetis/linkedin-discord-bot"
+source = "https://github.com/IAmSkweetis/linkedin-discord-bot"
+docs = "https://github.com/IAmSkweetis/linkedin-discord-bot/README.md"
+issues = "https://github.com/IAmSkweetis/linkedin-discord-bot/issues"
 
 [tool.hatch.version]
 path = "linkedin_discord_bot/__init__.py"
@@ -80,3 +89,6 @@ testpaths = ["tests"]
 log_file = "pytest.log"
 log_file_level = "INFO"
 log_file_format = "%(asctime)s %(levelname)s %(message)s"
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["psycopg"]

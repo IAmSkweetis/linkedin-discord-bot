@@ -178,3 +178,4 @@ pytest.xml
 
 chromedriver
 .sqlite
+.pgdata

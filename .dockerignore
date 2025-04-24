@@ -13,3 +13,4 @@ dist
 pytest.xml
 pytest.log
 chromedriver
+.pgdata
